@@ -78,12 +78,12 @@ export default function Home({ postsPagination }: HomeProps) {
                 <a>
                   <strong>{post.data.title}</strong>
                   <p>{post.data.subtitle}</p>
-                  <div className={styles.postFooter}>
-                    <div className={styles.postDate}>
+                  <div className={commonStyles.postDetails}>
+                    <div className={commonStyles.postDate}>
                       <FiCalendar size="20" />
                       <time>{post.first_publication_date}</time>
                     </div>
-                    <div className={styles.postAuthor}>
+                    <div className={commonStyles.postAuthor}>
                       <FiUser size="20" />
                       <span>{post.data.author}</span>
                     </div>
@@ -140,5 +140,6 @@ export const getStaticProps: GetStaticProps = async () => {
     props: {
       postsPagination,
     },
+    revalidate: 1000 * 60 * 60 * 24, // 24 horas
   };
 };

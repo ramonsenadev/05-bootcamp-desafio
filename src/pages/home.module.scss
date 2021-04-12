@@ -27,27 +27,7 @@
   }
 }
 
-.postFooter {
-  display: flex;
-  align-items: center;
-  color: var(--gray-500);
 
-  .postDate,
-  .postAuthor {
-    display: flex;
-    align-items: center;
-    font-size: 0.875rem;
-
-    svg {
-      margin-right: 0.5rem;
-    }
-  }
-
-  .postDate {
-    margin-right: 1.5rem;
-  }
-
-}
 
 .carregarMaisPosts {
   display: inline-block;

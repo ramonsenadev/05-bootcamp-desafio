@@ -7,3 +7,31 @@
   max-width: 720px;
   margin: 0 auto;
 }
+
+
+.postDetails {
+  display: flex;
+  align-items: center;
+  color: var(--gray-500);
+
+  .postDate,
+  .postAuthor,
+  .postTime {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+
+    svg {
+      margin-right: 0.5rem;
+    }
+  }
+
+  .postDate {
+    margin-right: 1.5rem;
+  }
+
+  .postTime {
+    margin-left: 1.5rem;
+  }
+
+}
