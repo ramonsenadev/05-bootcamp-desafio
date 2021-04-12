@@ -2,12 +2,13 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Prismic from '@prismicio/client';
 import { GetStaticProps } from 'next';
+import { useState } from 'react';
 
 import { FiUser, FiCalendar } from 'react-icons/fi';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
-import { useState } from 'react';
+import ApiSearchResponse from '@prismicio/client/types/ApiSearchResponse';
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -41,7 +42,23 @@ export default function Home({ postsPagination }: HomeProps) {
 
     fetch(next_page)
       .then(response => response.json())
-      .then(({ results: newPosts, next_page: newNextPage }) => {
+      .then(({ results, next_page: newNextPage }: ApiSearchResponse) => {
+        const newPosts = results.map(post => ({
+          uid: post.uid,
+          first_publication_date: format(
+            new Date(post.first_publication_date),
+            'd MMM Y',
+            {
+              locale: ptBR,
+            }
+          ),
+          data: {
+            title: post.data.title,
+            subtitle: post.data.subtitle,
+            author: post.data.author,
+          },
+        }));
+
         setPosts([...posts, ...newPosts]);
         setNextPage(newNextPage);
       });
