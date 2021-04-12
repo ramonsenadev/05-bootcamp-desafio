@@ -7,6 +7,7 @@ import { FiUser, FiCalendar } from 'react-icons/fi';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
+import { useState } from 'react';
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -32,7 +33,20 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
-  //   // TODO
+  const [posts, setPosts] = useState(postsPagination.results);
+  const [nextPage, setNextPage] = useState(postsPagination.next_page);
+
+  const handleLoadMorePosts = (): void => {
+    const { next_page } = postsPagination;
+
+    fetch(next_page)
+      .then(response => response.json())
+      .then(({ results: newPosts, next_page: newNextPage }) => {
+        setPosts([...posts, ...newPosts]);
+        setNextPage(newNextPage);
+      });
+  };
+
   return (
     <>
       <Head>
@@ -42,8 +56,8 @@ export default function Home({ postsPagination }: HomeProps) {
       <main className={commonStyles.container}>
         <div className={commonStyles.contentContainer}>
           <div className={styles.postContainer}>
-            {postsPagination.results.map(post => (
-              <Link href={`/post/${post.uid}`}>
+            {posts.map(post => (
+              <Link key={post.uid} href={`/post/${post.uid}`}>
                 <a>
                   <strong>{post.data.title}</strong>
                   <p>{post.data.subtitle}</p>
@@ -61,8 +75,14 @@ export default function Home({ postsPagination }: HomeProps) {
               </Link>
             ))}
           </div>
-          {postsPagination.next_page && (
-            <a className={styles.carregarMaisPosts}>Carregar mais posts</a>
+          {nextPage && (
+            <button
+              type="button"
+              className={styles.carregarMaisPosts}
+              onClick={handleLoadMorePosts}
+            >
+              Carregar mais posts
+            </button>
           )}
         </div>
       </main>
@@ -76,7 +96,7 @@ export const getStaticProps: GetStaticProps = async () => {
     [Prismic.predicates.at('document.type', 'posts')],
     {
       fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
-      pageSize: 2,
+      pageSize: 1,
     }
   );
 
