@@ -5,16 +5,19 @@ import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
 import Prismic from '@prismicio/client';
+import { useRouter } from 'next/router';
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
+import Header from '../../components/Header';
 
 interface Post {
+  uid: string;
   first_publication_date: string | null;
-  time_to_read: string;
   data: {
     title: string;
+    subtitle: string;
     banner: {
       url: string;
     };
@@ -23,7 +26,7 @@ interface Post {
       heading: string;
       body: {
         text: string;
-      };
+      }[];
     }[];
   };
 }
@@ -33,37 +36,67 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps) {
+  const router = useRouter();
+
+  const timeToRead =
+    post.data.content
+      .reduce((text, content) => `${text} ${RichText.asText(content.body)}`, '')
+      .split(' ').length / 200;
+
   return (
-    <main className={commonStyles.container}>
-      <div className={commonStyles.contentContainer}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>{post.data.title}</h1>
-          <div className={commonStyles.postDetails}>
-            <div className={commonStyles.postDate}>
-              <FiCalendar size="20" />
-              <time>{post.first_publication_date}</time>
+    <>
+      <Header />
+
+      {router.isFallback ? (
+        'Carregando...'
+      ) : (
+        <main className={commonStyles.container}>
+          <img
+            className={styles.banner}
+            src={post.data.banner.url}
+            alt={post.data.title}
+          />
+          <div className={commonStyles.contentContainer}>
+            <div className={styles.header}>
+              <h1 className={styles.title}>{post.data.title}</h1>
+              <div className={commonStyles.postDetails}>
+                <div className={commonStyles.postDate}>
+                  <FiCalendar size="20" />
+                  <time>
+                    {format(new Date(post.first_publication_date), 'd MMM Y', {
+                      locale: ptBR,
+                    })}
+                  </time>
+                </div>
+                <div className={commonStyles.postAuthor}>
+                  <FiUser size="20" />
+                  <span>{post.data.author}</span>
+                </div>
+                <div className={commonStyles.postTime}>
+                  <FiClock size="20" />
+                  <span>{`${
+                    parseInt(String(timeToRead), 10) < timeToRead
+                      ? parseInt(String(timeToRead), 10) + 1
+                      : timeToRead.toFixed()
+                  } min`}</span>
+                </div>
+              </div>
             </div>
-            <div className={commonStyles.postAuthor}>
-              <FiUser size="20" />
-              <span>{post.data.author}</span>
-            </div>
-            <div className={commonStyles.postTime}>
-              <FiClock size="20" />
-              <span>{post.time_to_read}</span>
+
+            <div className={styles.body}>
+              {post.data.content.map((content, index) => (
+                <div key={content.heading}>
+                  {content.heading && <h2>{content.heading}</h2>}
+                  {content.body.map(richText => (
+                    <p key={richText.text}>{richText.text}</p>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-
-        <div className={styles.body}>
-          {post.data.content.map(content => (
-            <div key={content.body.text}>
-              {content.heading && <h2>{content.heading}</h2>}
-              <div dangerouslySetInnerHTML={{ __html: content.body.html }} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </main>
+        </main>
+      )}
+    </>
   );
 }
 
@@ -93,32 +126,19 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     lang: 'pt-BR',
   });
 
-  const timeToRead =
-    response.data.content
-      .reduce((text, content) => `${text} ${RichText.asText(content.body)}`, '')
-      .split(' ').length / 200;
-
   const post: Post = {
-    first_publication_date: format(
-      new Date(response.first_publication_date),
-      'd MMM Y',
-      {
-        locale: ptBR,
-      }
-    ),
-    time_to_read: `${timeToRead.toFixed(0)} min`,
+    uid: response.uid,
+    first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
       banner: {
         url: response.data.banner.url,
       },
       author: response.data.author,
       content: response.data.content.map(content => ({
         heading: content?.heading,
-        body: {
-          html: RichText.asHtml(content.body),
-          text: RichText.asText(content.body),
-        },
+        body: content.body,
       })),
     },
   };
