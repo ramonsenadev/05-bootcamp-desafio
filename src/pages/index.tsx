@@ -13,6 +13,7 @@ import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+import Header from '../components/Header';
 
 interface Post {
   uid?: string;
@@ -45,13 +46,7 @@ export default function Home({ postsPagination }: HomeProps) {
       .then(({ results, next_page: newNextPage }: ApiSearchResponse) => {
         const newPosts = results.map(post => ({
           uid: post.uid,
-          first_publication_date: format(
-            new Date(post.first_publication_date),
-            'd MMM Y',
-            {
-              locale: ptBR,
-            }
-          ),
+          first_publication_date: post.first_publication_date,
           data: {
             title: post.data.title,
             subtitle: post.data.subtitle,
@@ -70,6 +65,8 @@ export default function Home({ postsPagination }: HomeProps) {
         <title>Início | spacetraveling.</title>
       </Head>
 
+      <Header />
+
       <main className={commonStyles.container}>
         <div className={commonStyles.contentContainer}>
           <div className={styles.postContainer}>
@@ -81,7 +78,15 @@ export default function Home({ postsPagination }: HomeProps) {
                   <div className={commonStyles.postDetails}>
                     <div className={commonStyles.postDate}>
                       <FiCalendar size="20" />
-                      <time>{post.first_publication_date}</time>
+                      <time>
+                        {format(
+                          new Date(post.first_publication_date),
+                          'd MMM Y',
+                          {
+                            locale: ptBR,
+                          }
+                        )}
+                      </time>
                     </div>
                     <div className={commonStyles.postAuthor}>
                       <FiUser size="20" />
@@ -120,13 +125,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const postsPagination = {
     results: postsResponse.results.map(post => ({
       uid: post.uid,
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'd MMM Y',
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,

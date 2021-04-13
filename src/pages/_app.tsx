@@ -3,12 +3,7 @@ import Header from '../components/Header';
 import '../styles/globals.scss';
 
 function MyApp({ Component, pageProps }: AppProps): JSX.Element {
-  return (
-    <>
-      <Header />
-      <Component {...pageProps} />
-    </>
-  );
+  return <Component {...pageProps} />;
 }
 
 export default MyApp;
