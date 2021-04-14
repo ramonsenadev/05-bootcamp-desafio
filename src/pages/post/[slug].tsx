@@ -6,6 +6,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 
 import Prismic from '@prismicio/client';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
@@ -37,6 +38,19 @@ interface PostProps {
 
 export default function Post({ post }: PostProps) {
   const router = useRouter();
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    const anchor = document.getElementById('inject-comments-for-uterances');
+    script.setAttribute('src', 'https://utteranc.es/client.js');
+    script.setAttribute('crossorigin', 'anonymous');
+    script.setAttribute('async', 'true');
+    script.setAttribute('repo', 'ramonsenadev/comments-test-with-utterances');
+    script.setAttribute('issue-term', 'pathname');
+    script.setAttribute('label', 'blog');
+    script.setAttribute('theme', 'github-dark');
+    anchor.appendChild(script);
+  }, []);
 
   const timeToRead =
     post.data.content
@@ -92,6 +106,9 @@ export default function Post({ post }: PostProps) {
                   ))}
                 </div>
               ))}
+            </div>
+            <div className={styles.commentsContainer}>
+              <div id="inject-comments-for-uterances" />
             </div>
           </div>
         </main>
