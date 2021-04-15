@@ -7,6 +7,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 import Prismic from '@prismicio/client';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
@@ -34,9 +35,10 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  preview: boolean;
 }
 
-export default function Post({ post }: PostProps) {
+export default function Post({ post, preview }: PostProps): JSX.Element {
   const router = useRouter();
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function Post({ post }: PostProps) {
             </div>
 
             <div className={styles.body}>
-              {post.data.content.map((content, index) => (
+              {post.data.content.map(content => (
                 <div key={content.heading}>
                   {content.heading && <h2>{content.heading}</h2>}
                   {content.body.map(richText => (
@@ -110,6 +112,15 @@ export default function Post({ post }: PostProps) {
             <div className={styles.commentsContainer}>
               <div id="inject-comments-for-uterances" />
             </div>
+            {preview && (
+              <aside>
+                <Link href="/api/exit-preview">
+                  <a className={commonStyles.previewModeButton}>
+                    Sair do modo Preview
+                  </a>
+                </Link>
+              </aside>
+            )}
           </div>
         </main>
       )}
@@ -135,12 +146,17 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  preview = false,
+  previewData,
+}) => {
   const { slug } = params;
 
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('posts', String(slug), {
     lang: 'pt-BR',
+    ref: previewData?.ref ?? null,
   });
 
   const post: Post = {
@@ -163,6 +179,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   return {
     props: {
       post,
+      preview,
     },
   };
 };
