@@ -17,6 +17,7 @@ import Header from '../../components/Header';
 interface Post {
   uid: string;
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     subtitle: string;
@@ -120,6 +121,20 @@ export default function Post({
                   } min`}</span>
                 </div>
               </div>
+              {post.last_publication_date &&
+                post.last_publication_date !== post.first_publication_date && (
+                  <div className={styles.lastUpdate}>
+                    <date>
+                      {format(
+                        new Date(post.last_publication_date),
+                        "'* editado em' d MMM Y, 'às' p",
+                        {
+                          locale: ptBR,
+                        }
+                      )}
+                    </date>
+                  </div>
+                )}
             </div>
 
             <div className={styles.body}>
@@ -206,6 +221,7 @@ export const getStaticProps: GetStaticProps = async ({
   const post: Post = {
     uid: response.uid,
     first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
     data: {
       title: response.data.title,
       subtitle: response.data.subtitle,

@@ -52,3 +52,11 @@
     font-weight: 600;
   }
 }
+
+.lastUpdate {
+  display: inline-block;
+  margin-top: 1rem;
+  font-style: italic;
+  font-size: 0.875rem;
+  color: var(--gray-500);
+}
