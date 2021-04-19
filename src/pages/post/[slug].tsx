@@ -33,38 +33,61 @@ interface Post {
   };
 }
 
+interface PostResume {
+  uid: string;
+  first_publication_date: string | null;
+  data: {
+    title: string;
+  };
+}
+
 interface PostProps {
   post: Post;
+  previousPost: PostResume | null;
+  nextPost: PostResume | null;
   preview: boolean;
 }
 
-export default function Post({ post, preview }: PostProps): JSX.Element {
+export default function Post({
+  post,
+  preview,
+  previousPost,
+  nextPost,
+}: PostProps): JSX.Element {
   const router = useRouter();
 
   useEffect(() => {
     const script = document.createElement('script');
     const anchor = document.getElementById('inject-comments-for-uterances');
-    script.setAttribute('src', 'https://utteranc.es/client.js');
-    script.setAttribute('crossorigin', 'anonymous');
-    script.setAttribute('async', 'true');
-    script.setAttribute('repo', 'ramonsenadev/comments-test-with-utterances');
-    script.setAttribute('issue-term', 'pathname');
-    script.setAttribute('label', 'blog');
-    script.setAttribute('theme', 'github-dark');
-    anchor.appendChild(script);
-  }, []);
+    if (anchor) {
+      script.setAttribute('src', 'https://utteranc.es/client.js');
+      script.setAttribute('crossorigin', 'anonymous');
+      script.setAttribute('async', 'true');
+      script.setAttribute('repo', 'ramonsenadev/comments-test-with-utterances');
+      script.setAttribute('issue-term', 'pathname');
+      script.setAttribute('label', 'blog');
+      script.setAttribute('theme', 'github-dark');
+      anchor.appendChild(script);
+    }
+  }, [post]);
 
-  const timeToRead =
-    post.data.content
-      .reduce((text, content) => `${text} ${RichText.asText(content.body)}`, '')
-      .split(' ').length / 200;
+  const timeToRead = post
+    ? post.data.content
+        .reduce(
+          (text, content) => `${text} ${RichText.asText(content.body)}`,
+          ''
+        )
+        .split(' ').length / 200
+    : null;
 
   return (
     <>
       <Header />
 
       {router.isFallback ? (
-        'Carregando...'
+        <main className={commonStyles.container}>
+          <div className={commonStyles.contentContainer}>Carregando...</div>
+        </main>
       ) : (
         <main className={commonStyles.container}>
           <img
@@ -109,6 +132,28 @@ export default function Post({ post, preview }: PostProps): JSX.Element {
                 </div>
               ))}
             </div>
+            {(previousPost || nextPost) && (
+              <div className={styles.postNavigation}>
+                <ul>
+                  <li>
+                    {previousPost && (
+                      <>
+                        <p>{previousPost.data.title}</p>
+                        <a href={`/post/${previousPost.uid}`}>Post anterior</a>
+                      </>
+                    )}
+                  </li>
+                  <li>
+                    {nextPost && (
+                      <>
+                        <p>{nextPost.data.title}</p>
+                        <a href={`/post/${nextPost.uid}`}>Próximo post</a>
+                      </>
+                    )}
+                  </li>
+                </ul>
+              </div>
+            )}
             <div className={styles.commentsContainer}>
               <div id="inject-comments-for-uterances" />
             </div>
@@ -155,7 +200,6 @@ export const getStaticProps: GetStaticProps = async ({
 
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('posts', String(slug), {
-    lang: 'pt-BR',
     ref: previewData?.ref ?? null,
   });
 
@@ -176,9 +220,57 @@ export const getStaticProps: GetStaticProps = async ({
     },
   };
 
+  const previousPostResponse = await prismic.query(
+    [
+      Prismic.predicates.dateBefore(
+        'document.first_publication_date',
+        response.first_publication_date
+      ),
+    ],
+    {
+      fetch: ['posts.title'],
+      pageSize: 1,
+    }
+  );
+
+  const nextPostResponse = await prismic.query(
+    [
+      Prismic.predicates.dateAfter(
+        'document.first_publication_date',
+        response.first_publication_date
+      ),
+    ],
+    {
+      fetch: ['posts.title'],
+      pageSize: 1,
+    }
+  );
+
+  let previousPost = null;
+  if (previousPostResponse.results.length >= 1) {
+    previousPost = {
+      uid: previousPostResponse.results[0].uid,
+      data: {
+        title: previousPostResponse.results[0].data.title,
+      },
+    };
+  }
+
+  let nextPost = null;
+  if (nextPostResponse.results.length >= 1) {
+    nextPost = {
+      uid: nextPostResponse.results[0].uid,
+      data: {
+        title: nextPostResponse.results[0].data.title,
+      },
+    };
+  }
+
   return {
     props: {
       post,
+      previousPost,
+      nextPost,
       preview,
     },
   };

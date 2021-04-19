@@ -27,3 +27,28 @@
 .commentsContainer {
   margin-top: 4rem;
 }
+
+.postNavigation {
+
+  font-size: 1.125rem;
+  margin-top: 3.5rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--gray-800);
+
+  ul {
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+  }
+
+  li:nth-child(2) {
+    text-align: right;
+  }
+
+  a {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
