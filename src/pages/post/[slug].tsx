@@ -124,7 +124,7 @@ export default function Post({
               {post.last_publication_date &&
                 post.last_publication_date !== post.first_publication_date && (
                   <div className={styles.lastUpdate}>
-                    <date>
+                    <time>
                       {format(
                         new Date(post.last_publication_date),
                         "'* editado em' d MMM Y, 'às' p",
@@ -132,7 +132,7 @@ export default function Post({
                           locale: ptBR,
                         }
                       )}
-                    </date>
+                    </time>
                   </div>
                 )}
             </div>
