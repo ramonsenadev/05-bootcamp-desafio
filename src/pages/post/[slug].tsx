@@ -249,6 +249,16 @@ export const getStaticProps: GetStaticProps = async ({
     }
   );
 
+  let previousPost = null;
+  if (previousPostResponse.results.length >= 1) {
+    previousPost = {
+      uid: previousPostResponse.results[0].uid,
+      data: {
+        title: previousPostResponse.results[0].data.title,
+      },
+    };
+  }
+
   const nextPostResponse = await prismic.query(
     [
       Prismic.predicates.dateAfter(
@@ -261,16 +271,6 @@ export const getStaticProps: GetStaticProps = async ({
       pageSize: 1,
     }
   );
-
-  let previousPost = null;
-  if (previousPostResponse.results.length >= 1) {
-    previousPost = {
-      uid: previousPostResponse.results[0].uid,
-      data: {
-        title: previousPostResponse.results[0].data.title,
-      },
-    };
-  }
 
   let nextPost = null;
   if (nextPostResponse.results.length >= 1) {
